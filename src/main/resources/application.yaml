@@ -1,0 +1,6 @@
+server:
+  port: 2817
+
+spring:
+  application:
+    name: caoh2-personal-website
