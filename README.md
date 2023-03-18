@@ -118,11 +118,11 @@ project
    ```
 8. 项目部署命令：
     ```shell
-    java -jar backend-0.0.1-SNAPSHOT.jar --spring.profiles.active=dev
+    java -jar test-demo-0.0.1-SNAPSHOT.jar --spring.profiles.active=dev
     ```
 9. 项目停止命令：
    ```shell
-   ps -ef | grep backend-0.0.1-SNAPSHOT.jar | grep -v grep | awk '{print $2}' | xargs kill -9
+   ps -ef | grep test-demo-0.0.1-SNAPSHOT.jar | grep -v grep | awk '{print $2}' | xargs kill -9
    ```
 
 ### Docker部署
@@ -147,7 +147,3 @@ project
 ### 前台展示
 
 ![前台展示](https://images.gitee.com/uploads/images/2020/0318/171111_0b5b5b1e_541002.png "前台展示.png")
-
-
-
-
