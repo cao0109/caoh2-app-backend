@@ -3,8 +3,8 @@ package cn.caoh2.app.controller;
 import cn.caoh2.app.entity.User;
 import cn.caoh2.app.exception.ServiceException;
 import cn.caoh2.app.service.UserService;
-import cn.caoh2.app.util.JwtTokenUtil;
-import cn.caoh2.app.util.Result;
+import cn.caoh2.app.utils.JwtTokenUtil;
+import cn.caoh2.app.utils.Result;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +21,7 @@ import static cn.caoh2.app.enums.ResultCode.USER_REGISTER_ERROR;
  * @Version 1.0
  */
 
+@SuppressWarnings("all")
 @Slf4j
 @RestController
 @RequestMapping("/api/user")
@@ -45,11 +46,15 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public Result login(@RequestBody Map<String, String> params) {
-        String username = params.get("username");
-        String password = params.get("password");
-        log.info("username: {}, password: {}", username, password);
-        return null;
+    public Result<Map<String, Object>> login(@RequestBody User user) {
+        log.info("user: {}", user);
+        Map<String, Object> data = null;
+        try {
+            data = userService.login(user);
+        } catch (ServiceException e) {
+            return Result.failure(e.getResultCode(), e.getMessage());
+        }
+        return Result.success(data);
     }
 
     /**
@@ -57,6 +62,11 @@ public class UserController {
      */
     @PostMapping("/logout")
     public Result logout() {
+        try {
+            userService.logout();
+        } catch (ServiceException e) {
+            return Result.failure(e.getResultCode(), e.getMessage());
+        }
         return Result.success();
     }
 

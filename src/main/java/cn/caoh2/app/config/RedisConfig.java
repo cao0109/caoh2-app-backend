@@ -1,13 +1,10 @@
 package cn.caoh2.app.config;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import cn.caoh2.app.utils.FastJsonRedisSerializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 /**
@@ -17,29 +14,29 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
  * @Version 1.0
  */
 @Configuration
+@SuppressWarnings("all")
 public class RedisConfig {
+
 
     @Bean
     public RedisTemplate<Object, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
-        RedisTemplate<Object, Object> template = new RedisTemplate<>();
-        template.setConnectionFactory(connectionFactory);
+        RedisTemplate<Object, Object> redisTemplate = new RedisTemplate<>();
+        redisTemplate.setConnectionFactory(connectionFactory);
 
-        //使用Jackson2JsonRedisSerializer来序列化和反序列化redis的value值
-        Jackson2JsonRedisSerializer<Object> serializer = new Jackson2JsonRedisSerializer<>(Object.class);
+        // 使用Jackson2JsonRedisSerializer来序列化和反序列化redis的value值
+        FastJsonRedisSerializer<Object> serializer = new FastJsonRedisSerializer<>(Object.class);
+//        ObjectMapper mapper = new ObjectMapper();
+//        mapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
+//        mapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
+//        serializer.setObjectMapper(mapper);
 
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
-        mapper.activateDefaultTyping(mapper.getPolymorphicTypeValidator(), ObjectMapper.DefaultTyping.NON_FINAL);
-        serializer.setObjectMapper(mapper);
+        // 设置value的序列化规则和 key的序列化规则
+        redisTemplate.setValueSerializer(serializer);
+        redisTemplate.setKeySerializer(new StringRedisSerializer());
+        redisTemplate.setHashKeySerializer(new StringRedisSerializer());
+        redisTemplate.setHashValueSerializer(serializer);
+        redisTemplate.afterPropertiesSet();
+        return redisTemplate;
 
-        //使用StringRedisSerializer来序列化和反序列化redis的key值
-        template.setKeySerializer(new StringRedisSerializer());
-        template.setHashKeySerializer(new StringRedisSerializer());
-
-        //设置value的序列化规则和 key的序列化规则
-        template.setValueSerializer(serializer);
-        template.setHashValueSerializer(serializer);
-        template.afterPropertiesSet();
-        return template;
     }
 }

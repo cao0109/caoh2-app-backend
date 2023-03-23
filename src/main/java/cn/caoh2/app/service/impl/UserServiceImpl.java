@@ -4,60 +4,68 @@ import cn.caoh2.app.dto.UserDto;
 import cn.caoh2.app.entity.User;
 import cn.caoh2.app.enums.ResultCode;
 import cn.caoh2.app.exception.ServiceException;
-import cn.caoh2.app.mapper.RoleMapper;
 import cn.caoh2.app.mapper.UserMapper;
 import cn.caoh2.app.mapper.UserRoleMapper;
 import cn.caoh2.app.service.UserService;
-import cn.caoh2.app.util.Md5Utils;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import cn.caoh2.app.utils.JwtTokenUtil;
+import cn.caoh2.app.utils.Md5Utils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+
 /**
  * @author 91523
- * @description 针对表【tb_user(用户表)】的数据库操作Service实现
- * @createDate 2023-03-16 12:27:08
+ * @description 针对表【sys_user(用户表)】的数据库操作Service实现
+ * @createDate 2023-03-19 19:56:01
  */
+
+@SuppressWarnings("all")
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
-
     @Autowired
     private UserMapper userMapper;
-
-    @Autowired
-    private RoleMapper roleMapper;
-
     @Autowired
     private UserRoleMapper userRoleMapper;
-
-
-    @Override
-    public UserDto getUserByUsername(String username) {
-        try {
-            return userMapper.selectUserDtoByUsername(username);
-        } catch (RuntimeException e) {
-            throw new ServiceException(ResultCode.DATA_SELECT_ERROR);
-        }
-    }
+    @Autowired
+    private JwtTokenUtil jwtTokenUtil;
+    @Autowired
+    private RedisTemplate redisTemplate;
+    @Autowired
+    private AuthenticationManager authenticationManager;
 
     @Override
-    public User login(String username, String password) {
-        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(User::getUsername, username);
-        try {
-            User user = userMapper.selectOne(queryWrapper);
-            if (user == null) {
-                throw new ServiceException(ResultCode.USER_NOT_EXIST);
-            }
-            if (!user.getPassword().equals(Md5Utils.encryptPassword(password))) {
-                throw new ServiceException(ResultCode.USER_PASSWORD_ERROR);
-            }
-            return user;
-        } catch (Exception e) {
+    public Map<String, Object> login(User user) {
+        // 调用AuthenticationManager authentication进行身份验证
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword());
+        Authentication authentication = authenticationManager.authenticate(authenticationToken);
+        if (Objects.isNull(authentication)) {
             throw new ServiceException(ResultCode.USER_LOGIN_ERROR);
         }
+        // 将用户信息封装到UserDetails中
+        UserDto userDto = (UserDto) authentication.getPrincipal();
+        // 生成token
+        String token = jwtTokenUtil.generateToken(userDto);
+        // 将userDto 存入redis
+        userDto.setToken(token);
+        ObjectMapper objectMapper = new ObjectMapper();
+        redisTemplate.opsForValue().set("token:" + userDto.getUsername(), userDto,
+                3600000, TimeUnit.SECONDS);
+        // 将token返回给controller
+        Map<String, Object> result = new HashMap<>(2);
+        result.put("token", token);
+        return result;
     }
 
     @Override
@@ -68,11 +76,21 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             String encryptPassword = Md5Utils.encryptPassword(password);
             user.setPassword(encryptPassword);
             userMapper.insert(user);
-            userRoleMapper.insertUserRole(user.getId(), 2);
+            userRoleMapper.insertUserRole(user.getUserId(), 2);
             return user;
         } catch (ServiceException e) {
             throw new ServiceException(ResultCode.USER_REGISTER_ERROR);
         }
+    }
+
+    @Override
+    public void logout() {
+        UsernamePasswordAuthenticationToken authentication = (UsernamePasswordAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
+        if (Objects.nonNull(authentication)) {
+            UserDto userDto = (UserDto) authentication.getPrincipal();
+            redisTemplate.delete("token:" + userDto.getUsername());
+        }
+
     }
 }
 

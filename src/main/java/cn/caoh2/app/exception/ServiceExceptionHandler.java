@@ -1,8 +1,10 @@
 package cn.caoh2.app.exception;
 
 import cn.caoh2.app.enums.ResultCode;
-import cn.caoh2.app.util.Result;
+import cn.caoh2.app.utils.Result;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -22,7 +24,7 @@ public class ServiceExceptionHandler {
      */
     @ExceptionHandler(ServiceException.class)
     @ResponseBody
-    public Result handleServiceException(ServiceException e) {
+    public Result<Object> handleServiceException(ServiceException e) {
         log.error("ServiceException: {}", e.getMessage(), e);
         return Result.failure(e.getResultCode());
     }
@@ -32,9 +34,15 @@ public class ServiceExceptionHandler {
      */
     @ExceptionHandler(Exception.class)
     @ResponseBody
-    public Result handleException(Exception e) {
+    public Result<Object> handleException(Exception e) {
         log.error("Exception: {}", e.getMessage(), e);
-        return Result.failure(ResultCode.SYSTEM_ERROR);
+        if (e instanceof AccessDeniedException) {
+            return Result.failure(ResultCode.PERMISSION_NO_ACCESS);
+        }
+        if (e instanceof AuthenticationException) {
+            return Result.failure(ResultCode.USER_LOGIN_ERROR);
+        }
+        return Result.failure(ResultCode.SYSTEM_INNER_ERROR, e.getMessage());
     }
 }
 

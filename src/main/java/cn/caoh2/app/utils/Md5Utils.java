@@ -1,4 +1,4 @@
-package cn.caoh2.app.util;
+package cn.caoh2.app.utils;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

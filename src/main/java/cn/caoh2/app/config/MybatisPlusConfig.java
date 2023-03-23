@@ -41,7 +41,6 @@ public class MybatisPlusConfig {
                 Object createTime = getFieldValByName("createTime", metaObject);
                 if (null == createTime) {
                     setFieldValByName("createTime", LocalDateTime.now(), metaObject);
-                    this.updateFill(metaObject);
                 }
             }
 

@@ -7,22 +7,22 @@ import lombok.Data;
 import java.io.Serializable;
 
 /**
- * 用户和角色关联表
+ * 角色和菜单关联表
  *
- * @TableName sys_user_role
+ * @TableName sys_role_menu
  */
-@TableName(value = "sys_user_role")
+@TableName(value = "sys_role_menu")
 @Data
-public class UserRole implements Serializable {
-    /**
-     * 用户ID
-     */
-    private Long userId;
-
+public class RoleMenu implements Serializable {
     /**
      * 角色ID
      */
     private Long roleId;
+
+    /**
+     * 菜单ID
+     */
+    private Long menuId;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

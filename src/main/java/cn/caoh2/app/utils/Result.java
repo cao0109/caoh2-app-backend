@@ -1,4 +1,4 @@
-package cn.caoh2.app.util;
+package cn.caoh2.app.utils;
 
 import cn.caoh2.app.enums.ResultCode;
 import lombok.Data;

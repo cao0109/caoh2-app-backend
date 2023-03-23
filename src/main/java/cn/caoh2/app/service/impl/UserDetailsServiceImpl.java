@@ -1,17 +1,19 @@
 package cn.caoh2.app.service.impl;
 
 import cn.caoh2.app.dto.UserDto;
+import cn.caoh2.app.entity.User;
+import cn.caoh2.app.mapper.MenuMapper;
 import cn.caoh2.app.mapper.UserMapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @Author caoh2
@@ -26,18 +28,22 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Autowired
     private UserMapper userMapper;
 
+    @Autowired
+    private MenuMapper menuMapper;
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         // 通过用户名获取用户信息
-        UserDto userDto = userMapper.selectUserDtoByUsername(username);
-        if (userDto == null) {
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(User::getUsername, username);
+        User user = userMapper.selectOne(queryWrapper);
+        if (Objects.isNull(user)) {
             throw new UsernameNotFoundException("用户名不存在");
         }
-        // 构建用户授权信息
-        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority(userDto.getRole()));
-        return new org.springframework.security.core.userdetails.User(userDto.getUsername(),
-                userDto.getPassword(), authorities);
+        // 通过用户id获取用户权限信息
+        List<String> perms = menuMapper.selectPermsByUserId(user.getUserId());
+        // 将用户信息和权限信息封装到UserDetails中
+        return new UserDto(user, perms);
     }
 
 

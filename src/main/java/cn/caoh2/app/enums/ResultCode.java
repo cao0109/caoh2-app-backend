@@ -9,7 +9,7 @@ package cn.caoh2.app.enums;
  */
 public enum ResultCode {
     /* 成功状态码 */
-    SUCCESS(200, "操作成功"),
+    SUCCESS(2000, "操作成功"),
 
     /* 参数错误：10001-19999 */
     PARAM_IS_INVALID(10001, "参数无效"),
@@ -51,8 +51,29 @@ public enum ResultCode {
     INTERFACE_EXCEED_LOAD(60006, "接口负载过高"),
 
     /* 权限错误：70001-79999 */
-    PERMISSION_NO_ACCESS(70001, "无访问权限");
+    PERMISSION_NO_ACCESS(70001, "无访问权限"),
 
+    /* 上传文件错误：80001-89999 */
+    FILE_UPLOAD_ERROR(80001, "文件上传失败"),
+    FILE_DOWNLOAD_ERROR(80002, "文件下载失败"),
+    FILE_NOT_EXIST(80003, "文件不存在"),
+    FILE_TYPE_ERROR(80004, "文件类型错误"),
+    FILE_SIZE_ERROR(80005, "文件大小错误"),
+    FILE_NAME_ERROR(80006, "文件名错误"),
+
+    /* 任务错误：90001-99999 */
+    TASK_NOT_EXIST(90001, "任务不存在"),
+    TASK_ALREADY_EXISTED(90002, "任务已存在"),
+    TASK_ALREADY_STARTED(90003, "任务已启动"),
+    TASK_ALREADY_STOPPED(90004, "任务已停止"),
+    TASK_ALREADY_FINISHED(90005, "任务已完成"),
+    TASK_ALREADY_FAILED(90006, "任务已失败"),
+    TASK_ALREADY_CANCELED(90007, "任务已取消"),
+    TASK_ALREADY_DELETED(90008, "任务已删除"),
+    TASK_ALREADY_PAUSED(90009, "任务已暂停"),
+    TASK_ALREADY_RESUMED(90010, "任务已恢复"),
+    TASK_ALREADY_RESTARTED(90011, "任务已重启"),
+    TASK_ALREADY_REMOVED(90012, "任务已移除");
     /**
      * 错误码
      */

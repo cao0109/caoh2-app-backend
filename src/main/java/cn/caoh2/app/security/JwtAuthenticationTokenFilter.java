@@ -1,13 +1,14 @@
 package cn.caoh2.app.security;
 
+import cn.caoh2.app.dto.UserDto;
 import cn.caoh2.app.service.impl.UserDetailsServiceImpl;
-import cn.caoh2.app.util.JwtTokenUtil;
+import cn.caoh2.app.utils.JwtTokenUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -17,6 +18,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Objects;
 
 /**
  * @Author caoh2
@@ -25,32 +27,40 @@ import java.io.IOException;
  * @Version 1.0
  */
 
+@SuppressWarnings("all")
 @Slf4j
 @Component
 public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
-
     @Autowired
     private UserDetailsServiceImpl userDetailsService;
-
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
 
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
+        // 获取请求头中的token
         String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String authToken = authHeader.substring(7);
+            // 从token中获取用户名
             String username = jwtTokenUtil.getUsernameFromToken(authToken);
             log.info("checking authentication " + username);
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                if (jwtTokenUtil.validateToken(authToken, userDetails)) {
-                    UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                    authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    log.info("authenticated user " + username + ", setting security context");
-                    SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                // 从redis中获取token
+                UserDto userDto = (UserDto) redisTemplate.opsForValue().get("token:" + username);
+                if (Objects.isNull(userDto)) {
+                    log.info("token已过期");
+                    return;
                 }
+//                if (jwtTokenUtil.validateToken(authToken, userDto)) {
+                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userDto, null, userDto.getAuthorities());
+                authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                log.info("authenticated user " + username + ", setting security context");
+                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+//                }
             }
         }
         // 放行

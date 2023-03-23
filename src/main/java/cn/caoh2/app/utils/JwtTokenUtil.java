@@ -1,4 +1,4 @@
-package cn.caoh2.app.util;
+package cn.caoh2.app.utils;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -24,6 +24,7 @@ public class JwtTokenUtil {
 
     // 用户名的key
     private static final String CLAIM_KEY_USERNAME = "sub";
+    private static final String CLAIM_KEY_USER = "sub";
     // jwt创建时间
     private static final String CLAIM_KEY_CREATED = "created";
     // jwt过期时间
@@ -31,7 +32,7 @@ public class JwtTokenUtil {
     // 密钥
     private static final String SECRET_KEY = "your-256-bit-secret";
     // 过期时间
-    private static final long VALIDITY_TIME_MS = 3600000;
+    private static final long VALIDITY_TIME_MS = 3600000; // 1h
 
     /**
      * 生成token
@@ -47,11 +48,18 @@ public class JwtTokenUtil {
         return createToken(claims, userDetails.getUsername());
     }
 
+    public String generateToken(String useId) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put(CLAIM_KEY_USER, useId);
+        claims.put(CLAIM_KEY_CREATED, new Date());
+        claims.put(JWT_CLAIMS_EXPIRATION, VALIDITY_TIME_MS);
+        return createToken(claims, useId);
+    }
 
     private static String createToken(Map<String, Object> claims, String subject) {
         Date now = new Date();
         Date validity = new Date(now.getTime() + VALIDITY_TIME_MS);
-        return Jwts.builder().setClaims(claims).setSubject(subject) // 用户名
+        return Jwts.builder().setClaims(claims).setSubject(subject)
                 .setIssuedAt(now).setExpiration(validity).signWith(SignatureAlgorithm.HS256, SECRET_KEY).compact();
     }
 
@@ -85,6 +93,10 @@ public class JwtTokenUtil {
      * 从token中获取登录用户名
      */
     public String getUsernameFromToken(String token) {
+        return getClaimsFromToken(token).getSubject();
+    }
+
+    public String getUserInfoFromToken(String token) {
         return getClaimsFromToken(token).getSubject();
     }
 

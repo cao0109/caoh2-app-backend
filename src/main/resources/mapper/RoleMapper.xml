@@ -5,15 +5,22 @@
 <mapper namespace="cn.caoh2.app.mapper.RoleMapper">
 
     <resultMap id="BaseResultMap" type="cn.caoh2.app.entity.Role">
-            <id property="id" column="id" jdbcType="BIGINT"/>
-            <result property="name" column="name" jdbcType="VARCHAR"/>
-            <result property="description" column="description" jdbcType="VARCHAR"/>
+            <id property="roleId" column="role_id" jdbcType="BIGINT"/>
+            <result property="roleName" column="role_name" jdbcType="VARCHAR"/>
+            <result property="roleKey" column="role_key" jdbcType="VARCHAR"/>
+            <result property="status" column="status" jdbcType="INTEGER"/>
+            <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+            <result property="createBy" column="create_by" jdbcType="BIGINT"/>
             <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updateBy" column="update_by" jdbcType="BIGINT"/>
             <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+            <result property="remark" column="remark" jdbcType="VARCHAR"/>
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,name,description,
-        create_time,update_time
+        role_id,role_name,role_key,
+        status,del_flag,create_by,
+        create_time,update_by,update_time,
+        remark
     </sql>
 </mapper>

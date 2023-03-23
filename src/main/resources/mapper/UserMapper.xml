@@ -5,32 +5,35 @@
 <mapper namespace="cn.caoh2.app.mapper.UserMapper">
 
     <resultMap id="BaseResultMap" type="cn.caoh2.app.entity.User">
-        <id property="id" column="id" jdbcType="BIGINT"/>
+        <id property="userId" column="user_id" jdbcType="BIGINT"/>
         <result property="username" column="username" jdbcType="VARCHAR"/>
+        <result property="nickName" column="nick_name" jdbcType="VARCHAR"/>
         <result property="password" column="password" jdbcType="VARCHAR"/>
-        <result property="nickname" column="nickname" jdbcType="VARCHAR"/>
+        <result property="salt" column="salt" jdbcType="VARCHAR"/>
         <result property="avatar" column="avatar" jdbcType="VARCHAR"/>
+        <result property="sex" column="sex" jdbcType="INTEGER"/>
         <result property="email" column="email" jdbcType="VARCHAR"/>
-        <result property="phone" column="phone" jdbcType="VARCHAR"/>
-        <result property="status" column="status" jdbcType="TINYINT"/>
+        <result property="mobile" column="mobile" jdbcType="VARCHAR"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="userType" column="user_type" jdbcType="INTEGER"/>
+        <result property="loginIp" column="login_ip" jdbcType="VARCHAR"/>
+        <result property="loginDate" column="login_date" jdbcType="TIMESTAMP"/>
+        <result property="createBy" column="create_by" jdbcType="BIGINT"/>
         <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="BIGINT"/>
         <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="intro" column="intro" jdbcType="VARCHAR"/>
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,username,password,
-        nickname,avatar,email,
-        phone,status,create_time,
-        update_time
+        user_id,username,nick_name,
+        password,salt,avatar,
+        sex,email,mobile,
+        status,del_flag,user_type,
+        login_ip,login_date,create_by,
+        create_time,update_by,update_time,
+        intro
     </sql>
 
-    <select id="selectUserDtoByUsername" resultType="cn.caoh2.app.dto.UserDto" parameterType="string">
-        select u.username, u.password, r.name as role
-        from tb_user u,
-             tb_user_role ur,
-             tb_role r
-        where u.id = ur.user_id
-          and ur.role_id = r.id
-          and u.username = #{username,javaType=string,jdbcType=VARCHAR}
-    </select>
 </mapper>

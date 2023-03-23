@@ -1,54 +1,68 @@
 package cn.caoh2.app.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * 角色表
+ * 菜单管理
  *
- * @TableName sys_role
+ * @TableName sys_menu
  */
-@TableName(value = "sys_role")
+@TableName(value = "sys_menu")
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_NULL) // 不序列化null值
-public class Role implements Serializable {
+public class Menu implements Serializable {
     /**
-     * 角色ID
+     * 菜单ID
      */
     @TableId(type = IdType.AUTO)
-    private Long roleId;
+    private Long menuId;
 
     /**
-     * 角色名称
+     * 菜单名称
      */
-    private String roleName;
+    private String menuName;
 
     /**
-     * 角色权限字符串
+     * 菜单URL(路由)
      */
-    private String roleKey;
+    private String path;
 
     /**
-     * 角色状态（0停用 1正常）
+     * 组件路径
+     */
+    private String component;
+
+    /**
+     * 父菜单ID,一级菜单为0
+     */
+    private Long parentId;
+
+    /**
+     * 菜单状态   0：隐藏   1：显示
+     */
+    private Integer visible;
+
+    /**
+     * 菜单状态   0：禁用   1：正常
      */
     private Integer status;
 
     /**
-     * 删除标志（0代表存在 1代表删除）
+     * 授权(多个用逗号分隔，如：user:list,user:create)
      */
-    private Integer delFlag;
+    private String perms;
+
+    /**
+     * 菜单图标
+     */
+    private String icon;
 
     /**
      * 创建者
@@ -75,6 +89,11 @@ public class Role implements Serializable {
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     private LocalDateTime updateTime;
+
+    /**
+     * 删除标志（0代表存在 1代表删除）
+     */
+    private Integer delFlag;
 
     /**
      * 备注

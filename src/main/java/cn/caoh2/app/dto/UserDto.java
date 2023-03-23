@@ -1,12 +1,18 @@
 package cn.caoh2.app.dto;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
+import cn.caoh2.app.entity.User;
+import com.alibaba.fastjson.annotation.JSONField;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
-import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @Author caoh2
@@ -15,66 +21,68 @@ import java.time.LocalDateTime;
  * @Version 1.0
  */
 @Data
-public class UserDto {
+@AllArgsConstructor
+@NoArgsConstructor
+public class UserDto implements UserDetails {
+    private User user;
+    private List<String> permissions;
+    @JSONField(serialize = false) // 不序列化
+    private List<GrantedAuthority> authorities;
+    private String token;
 
-    /**
-     * 用户ID
-     */
-    @TableId(type = IdType.AUTO)
-    private Long id;
+    public UserDto(User user) {
+        this.user = user;
+    }
 
-    /**
-     * 用户名
-     */
-    private String username;
+    public UserDto(User user, List<String> permissions) {
+        this.user = user;
+        this.permissions = permissions;
+    }
 
-    /**
-     * 密码
-     */
-    private String password;
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+/*        List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
+        for (String permission : permissions) {
+            SimpleGrantedAuthority simpleGrantedAuthority = new SimpleGrantedAuthority(permission);
+            grantedAuthorities.add(simpleGrantedAuthority);
+        }*/
+        if (Objects.isNull(authorities)) {
+            authorities = permissions.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList());
+        }
+        return authorities;
+    }
 
-    /**
-     * 昵称
-     */
-    private String nickname;
+    @Override
+    public String getPassword() {
+        return user.getPassword();
+    }
 
-    /**
-     * 头像
-     */
-    private String avatar;
+    @Override
+    public String getUsername() {
+        return user.getUsername();
+    }
 
-    /**
-     * 邮箱
-     */
-    private String email;
+    @Override
+    @JSONField(name = "isAccountNonExpired")
+    public boolean isAccountNonExpired() {
+        return true;
+    }
 
-    /**
-     * 手机号码
-     */
-    private String phone;
+    @Override
+    @JSONField(name = "isAccountNonLocked")
+    public boolean isAccountNonLocked() {
+        return true;
+    }
 
-    /**
-     * 用户状态：0->禁用；1->启用
-     */
-    private Integer status;
+    @Override
+    @JSONField(name = "isCredentialsNonExpired")
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
 
-    /**
-     * 角色
-     */
-    private String role;
-
-    /**
-     * 创建时间
-     */
-    @TableField(fill = FieldFill.INSERT)
-    private LocalDateTime createTime;
-
-    /**
-     * 更新时间
-     */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    private LocalDateTime updateTime;
-
-    @TableField(exist = false)
-    private static final long serialVersionUID = 1L;
+    @Override
+    @JSONField(name = "isEnabled")
+    public boolean isEnabled() {
+        return true;
+    }
 }
