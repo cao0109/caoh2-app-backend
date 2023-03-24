@@ -3,7 +3,7 @@ package cn.caoh2.app.controller;
 import cn.caoh2.app.entity.User;
 import cn.caoh2.app.exception.ServiceException;
 import cn.caoh2.app.service.UserService;
-import cn.caoh2.app.utils.JwtTokenUtil;
+import cn.caoh2.app.utils.JwtUtils;
 import cn.caoh2.app.utils.Result;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
@@ -31,7 +31,7 @@ public class UserController {
     private UserService userService;
 
     @Autowired
-    private JwtTokenUtil jwtTokenUtil;
+    private JwtUtils jwtUtils;
 
     @PostMapping("/register")
     public Result<User> register(@RequestBody User user) {

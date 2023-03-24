@@ -56,6 +56,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .authorizeRequests()
                 .antMatchers("/api/user/register", "/api/user/login").anonymous() // 注册和登录接口不需要认证
+                .antMatchers("/api/test/**").permitAll()
                 .anyRequest().authenticated() // 其他接口需要认证
                 .and()
                 .addFilterBefore(jwtAuthenticationTokenFilter,
